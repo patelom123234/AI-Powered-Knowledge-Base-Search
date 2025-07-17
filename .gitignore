@@ -1,0 +1,9 @@
+# In: .gitignore (at the project's root level)
+
+# Environment variables
+.env
+backend/.env
+frontend/.env
+
+# Dependencies
+node_modules/
