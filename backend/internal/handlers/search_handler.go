@@ -1,11 +1,9 @@
-// In: backend/internal/handlers/search_handler.go
-
 package handlers
 
 import (
-	"ai-knowledge-base/internal/ai"       // <-- Replace with your module name
-	"ai-knowledge-base/internal/database" // <-- Replace with your module name
-	"ai-knowledge-base/internal/kb"       // <-- Replace with your module name
+	"ai-knowledge-base/internal/ai"
+	"ai-knowledge-base/internal/database"
+	"ai-knowledge-base/internal/kb"
 	"database/sql"
 	"encoding/json"
 	"log"

@@ -7,8 +7,6 @@ import (
 	"log"
 	"time"
 
-	// The blank import is used to side-effect-import the sqlite3 driver.
-	// This registers the driver with the database/sql package.
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -17,7 +15,7 @@ type SearchHistory struct {
 	ID                 int64
 	UserQuery          string
 	AISummaryAnswer    string
-	AIRelevantArticles string // We'll store this as a JSON string for simplicity
+	AIRelevantArticles string
 	CreatedAt          time.Time
 }
 

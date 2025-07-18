@@ -7,7 +7,6 @@ import ResultsDisplay from './ResultsDisplay';
 describe('ResultsDisplay', () => {
 
   it('should display the AI summary answer from props', () => {
-    // ARRANGE: Create a mock result object
     const mockResult = {
       ai_summary_answer: 'This is a test summary from the AI.'
     };

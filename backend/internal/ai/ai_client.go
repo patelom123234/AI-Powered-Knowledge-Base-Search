@@ -1,5 +1,3 @@
-// In: backend/internal/ai/ai_client.go
-
 package ai
 
 import (
@@ -20,12 +18,12 @@ type AIResponse struct {
 	RelevantArticles []kb.Article `json:"ai_relevant_articles"`
 }
 
-// GenerativeAIModel interface for dependency injection
+// GenerativeAIModel interface for dependency injection.
 type GenerativeAIModel interface {
 	GenerateContent(ctx context.Context, parts ...genai.Part) (*genai.GenerateContentResponse, error)
 }
 
-// ModelFactory function type for creating AI models
+// ModelFactory function type for creating AI models.
 type ModelFactory func(ctx context.Context, apiKey string) (GenerativeAIModel, error)
 
 // GetAIAnswer is the REAL function that calls the Google Gemini API.
@@ -64,7 +62,6 @@ func getAIAnswerWithFactory(factory ModelFactory, userQuery string, articles []k
 		return nil, fmt.Errorf("received an empty response from AI")
 	}
 
-	// Extract the text content part.
 	aiContent := fmt.Sprintf("%v", resp.Candidates[0].Content.Parts[0])
 
 	// The AI's response might include markdown formatting for the JSON block (```json ... ```).
@@ -82,26 +79,23 @@ func getAIAnswerWithFactory(factory ModelFactory, userQuery string, articles []k
 	return &aiResponse, nil
 }
 
-// realModelFactory creates the real Gemini model
+// realModelFactory creates the real Gemini model.
 func realModelFactory(ctx context.Context, apiKey string) (GenerativeAIModel, error) {
 	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create genai client: %w", err)
 	}
 
-	// Select the Gemini model.
 	model := client.GenerativeModel("gemini-1.5-flash")
 	return model, nil
 }
 
 func buildPrompt(userQuery string, articles []kb.Article) string {
-	// Convert articles to a simple string format for the prompt.
 	var articlesContext string
 	for _, article := range articles {
 		articlesContext += fmt.Sprintf("Article ID: %s\nTitle: %s\nContent: %s\n\n", article.ID, article.Title, article.Content)
 	}
 
-	// The prompt itself. This is a critical part of the assignment.
 	return fmt.Sprintf(`
 You are an expert IT support assistant for a corporate knowledge base.
 Your task is to answer a user's question based ONLY on the provided knowledge base articles.
@@ -128,12 +122,12 @@ The JSON object must have the following structure:
 `, articlesContext, userQuery)
 }
 
+// cleanAIResponse removes everything before and after the JSON block.
 func cleanAIResponse(rawResponse string) string {
-	// Find the start and end of the JSON block.
 	start := strings.Index(rawResponse, "{")
 	end := strings.LastIndex(rawResponse, "}")
 	if start == -1 || end == -1 {
-		return rawResponse // Return as-is if it doesn't look like a JSON block
+		return rawResponse
 	}
 	return rawResponse[start : end+1]
 }

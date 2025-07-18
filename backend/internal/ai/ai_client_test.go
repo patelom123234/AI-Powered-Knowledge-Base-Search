@@ -1,5 +1,3 @@
-// In: backend/internal/ai/ai_client_test.go
-
 package ai
 
 import (
@@ -14,7 +12,7 @@ import (
 	"github.com/google/generative-ai-go/genai"
 )
 
-// MockGenerativeAIModel implements GenerativeAIModel for testing
+// MockGenerativeAIModel implements GenerativeAIModel for testing.
 type MockGenerativeAIModel struct {
 	shouldError bool
 	response    *genai.GenerateContentResponse
@@ -28,7 +26,7 @@ func (m *MockGenerativeAIModel) GenerateContent(ctx context.Context, parts ...ge
 	return m.response, nil
 }
 
-// mockModelFactory creates a mock model for testing
+// mockModelFactory creates a mock model for testing.
 func mockModelFactory(shouldError bool, response *genai.GenerateContentResponse, errorMsg string) ModelFactory {
 	return func(ctx context.Context, apiKey string) (GenerativeAIModel, error) {
 		return &MockGenerativeAIModel{
@@ -39,7 +37,7 @@ func mockModelFactory(shouldError bool, response *genai.GenerateContentResponse,
 	}
 }
 
-// TestAIResponseStruct tests the AIResponse struct definition and JSON marshaling
+// TestAIResponseStruct tests the AIResponse struct definition and JSON marshaling.
 func TestAIResponseStruct(t *testing.T) {
 	response := AIResponse{
 		SummaryAnswer: "This is a test summary answer",
@@ -162,7 +160,7 @@ func TestBuildPrompt(t *testing.T) {
 	}
 }
 
-// TestBuildPromptWithEmptyArticles tests buildPrompt with empty articles slice
+// TestBuildPromptWithEmptyArticles tests buildPrompt with empty articles slice.
 func TestBuildPromptWithEmptyArticles(t *testing.T) {
 	articles := []kb.Article{}
 	userQuery := "Test query"
@@ -181,7 +179,7 @@ func TestBuildPromptWithEmptyArticles(t *testing.T) {
 	}
 }
 
-// TestCleanAIResponse tests the cleanAIResponse function
+// TestCleanAIResponse tests the cleanAIResponse function.
 func TestCleanAIResponse(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -240,9 +238,8 @@ func TestCleanAIResponse(t *testing.T) {
 	}
 }
 
-// TestGetAIAnswerWithFactorySuccess tests successful AI response
+// TestGetAIAnswerWithFactorySuccess tests successful AI response.
 func TestGetAIAnswerWithFactorySuccess(t *testing.T) {
-	// Create a mock response
 	mockResponse := &genai.GenerateContentResponse{
 		Candidates: []*genai.Candidate{
 			{
@@ -291,7 +288,7 @@ func TestGetAIAnswerWithFactorySuccess(t *testing.T) {
 	}
 }
 
-// TestGetAIAnswerWithFactoryAPIError tests AI API error handling
+// TestGetAIAnswerWithFactoryAPIError tests AI API error handling.
 func TestGetAIAnswerWithFactoryAPIError(t *testing.T) {
 	factory := mockModelFactory(true, nil, "API error occurred")
 	articles := []kb.Article{
@@ -321,9 +318,8 @@ func TestGetAIAnswerWithFactoryAPIError(t *testing.T) {
 	}
 }
 
-// TestGetAIAnswerWithFactoryEmptyResponse tests empty AI response handling
+// TestGetAIAnswerWithFactoryEmptyResponse tests empty AI response handling.
 func TestGetAIAnswerWithFactoryEmptyResponse(t *testing.T) {
-	// Create an empty response
 	mockResponse := &genai.GenerateContentResponse{
 		Candidates: []*genai.Candidate{},
 	}
@@ -356,9 +352,8 @@ func TestGetAIAnswerWithFactoryEmptyResponse(t *testing.T) {
 	}
 }
 
-// TestGetAIAnswerWithFactoryInvalidJSON tests invalid JSON response handling
+// TestGetAIAnswerWithFactoryInvalidJSON tests invalid JSON response handling.
 func TestGetAIAnswerWithFactoryInvalidJSON(t *testing.T) {
-	// Create a response with invalid JSON
 	mockResponse := &genai.GenerateContentResponse{
 		Candidates: []*genai.Candidate{
 			{
@@ -399,7 +394,7 @@ func TestGetAIAnswerWithFactoryInvalidJSON(t *testing.T) {
 	}
 }
 
-// TestGetAIAnswerWithoutAPIKey tests GetAIAnswer when API key is not set
+// TestGetAIAnswerWithoutAPIKey tests GetAIAnswer when API key is not set.
 func TestGetAIAnswerWithoutAPIKey(t *testing.T) {
 	originalKey := os.Getenv("GEMINI_API_KEY")
 	os.Unsetenv("GEMINI_API_KEY")
@@ -429,9 +424,8 @@ func TestGetAIAnswerWithoutAPIKey(t *testing.T) {
 	}
 }
 
-// TestGetAIAnswerWithEmptyArticles tests GetAIAnswer with empty articles slice
+// TestGetAIAnswerWithEmptyArticles tests GetAIAnswer with empty articles slice.
 func TestGetAIAnswerWithEmptyArticles(t *testing.T) {
-	// Create a mock response
 	mockResponse := &genai.GenerateContentResponse{
 		Candidates: []*genai.Candidate{
 			{
@@ -447,7 +441,6 @@ func TestGetAIAnswerWithEmptyArticles(t *testing.T) {
 	factory := mockModelFactory(false, mockResponse, "")
 	articles := []kb.Article{}
 
-	// Set API key for test
 	originalKey := os.Getenv("GEMINI_API_KEY")
 	os.Setenv("GEMINI_API_KEY", "test-key")
 	defer os.Setenv("GEMINI_API_KEY", originalKey)
@@ -471,9 +464,8 @@ func TestGetAIAnswerWithEmptyArticles(t *testing.T) {
 	}
 }
 
-// TestGetAIAnswerWithEmptyQuery tests GetAIAnswer with empty query
+// TestGetAIAnswerWithEmptyQuery tests GetAIAnswer with empty query.
 func TestGetAIAnswerWithEmptyQuery(t *testing.T) {
-	// Create a mock response
 	mockResponse := &genai.GenerateContentResponse{
 		Candidates: []*genai.Candidate{
 			{
@@ -495,7 +487,6 @@ func TestGetAIAnswerWithEmptyQuery(t *testing.T) {
 		},
 	}
 
-	// Set API key for test
 	originalKey := os.Getenv("GEMINI_API_KEY")
 	os.Setenv("GEMINI_API_KEY", "test-key")
 	defer os.Setenv("GEMINI_API_KEY", originalKey)
@@ -515,7 +506,7 @@ func TestGetAIAnswerWithEmptyQuery(t *testing.T) {
 	}
 }
 
-// BenchmarkBuildPrompt benchmarks the buildPrompt function
+// BenchmarkBuildPrompt benchmarks the buildPrompt function.
 func BenchmarkBuildPrompt(b *testing.B) {
 	articles := []kb.Article{
 		{
@@ -536,7 +527,7 @@ func BenchmarkBuildPrompt(b *testing.B) {
 	}
 }
 
-// BenchmarkCleanAIResponse benchmarks the cleanAIResponse function
+// BenchmarkCleanAIResponse benchmarks the cleanAIResponse function.
 func BenchmarkCleanAIResponse(b *testing.B) {
 	input := "Here is the response: {\"key\": \"value\"} That's it."
 	for i := 0; i < b.N; i++ {

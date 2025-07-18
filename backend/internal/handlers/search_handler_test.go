@@ -1,9 +1,7 @@
-// In: backend/internal/handlers/search_handler_test.go
-
 package handlers
 
 import (
-	"ai-knowledge-base/internal/database" // <-- Replace with your module name
+	"ai-knowledge-base/internal/database"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -18,7 +16,7 @@ func TestMain(m *testing.M) {
 	// Setup: Create a temporary test database.
 	// We'll run the tests, and then tear it down regardless of pass or fail.
 	setup()
-	code := m.Run() // Run the tests
+	code := m.Run()
 	teardown()
 	os.Exit(code)
 }
@@ -35,23 +33,20 @@ func teardown() {
 	os.Remove(testDBFile)
 }
 
-// TestSearchHandler is our main test function.
 func TestSearchHandler(t *testing.T) {
-	// --- ARRANGE ---
-	// 1. Initialize a clean, temporary database for this test.
 	db := database.InitDB(testDBFile)
 	defer db.Close()
 
-	// 2. Create our handler, passing in the test database.
+	// Create our handler, passing in the test database.
 	handler := SearchHandler(db)
 
-	// 3. Create the request body (the JSON we want to send).
+	// Create the request body (the JSON we want to send).
 	requestBody := SearchRequest{
 		Query: "how to reset password?",
 	}
 	bodyBytes, _ := json.Marshal(requestBody)
 
-	// 4. Create a new HTTP request object for our test.
+	// Create a new HTTP request object for our test.
 	// We use `bytes.NewReader` to create a stream from our JSON bytes.
 	req, err := http.NewRequest("POST", "/api/search-query", bytes.NewReader(bodyBytes))
 	if err != nil {
@@ -59,37 +54,31 @@ func TestSearchHandler(t *testing.T) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// 5. Create a ResponseRecorder.
+	// Create a ResponseRecorder.
 	// This is a special tool from httptest that acts like a fake web browser,
 	// capturing the HTTP response that our handler writes.
 	rr := httptest.NewRecorder()
 
-	// --- ACT ---
-	// Call the handler's ServeHTTP method directly, passing our fake request and recorder.
 	handler.ServeHTTP(rr, req)
 
-	// --- ASSERT ---
-	// 1. Check the status code.
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	// 2. Check the response body.
+	// Check the response body.
 	// We expect the mocked response from our `ai_client`.
 	expectedSummary := "To reset your password, please navigate to the login page and click the 'Forgot Password' link. This is a mocked response."
 
-	// Decode the JSON response we received into a struct.
 	var responseBody map[string]interface{}
 	if err := json.NewDecoder(rr.Body).Decode(&responseBody); err != nil {
 		t.Fatalf("could not decode response body: %v", err)
 	}
 
-	// Check if the summary in the response matches what we expect.
 	if summary := responseBody["ai_summary_answer"]; summary != expectedSummary {
 		t.Errorf("handler returned unexpected body: got %v want %v", summary, expectedSummary)
 	}
 
-	// 3. (Optional but good) Check if the data was saved to the database.
+	// (Optional but good) Check if the data was saved to the database.
 	var count int
 	err = db.QueryRow("SELECT COUNT(*) FROM search_history WHERE user_query = ?", requestBody.Query).Scan(&count)
 	if err != nil {
@@ -100,19 +89,14 @@ func TestSearchHandler(t *testing.T) {
 	}
 }
 
-// In: backend/internal/handlers/search_handler_test.go
-// (Add these functions after the TestSearchHandler function)
-
 // TestSearchHandler_EmptyQuery tests the case where the user sends an empty query.
 func TestSearchHandler_EmptyQuery(t *testing.T) {
-	// --- ARRANGE ---
-	db := database.InitDB(testDBFile) // Use the test DB
+	db := database.InitDB(testDBFile)
 	defer db.Close()
 
 	handler := SearchHandler(db)
 
-	// Create a request with an empty query string
-	requestBody := SearchRequest{Query: " "} // A query with only a space
+	requestBody := SearchRequest{Query: " "}
 	bodyBytes, _ := json.Marshal(requestBody)
 
 	req, _ := http.NewRequest("POST", "/api/search-query", bytes.NewReader(bodyBytes))
@@ -120,11 +104,8 @@ func TestSearchHandler_EmptyQuery(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	// --- ACT ---
 	handler.ServeHTTP(rr, req)
 
-	// --- ASSERT ---
-	// We expect a 400 Bad Request status code.
 	if status := rr.Code; status != http.StatusBadRequest {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
 	}
@@ -132,25 +113,20 @@ func TestSearchHandler_EmptyQuery(t *testing.T) {
 
 // TestSearchHandler_InvalidJSON tests the case where the frontend sends malformed JSON.
 func TestSearchHandler_InvalidJSON(t *testing.T) {
-	// --- ARRANGE ---
 	db := database.InitDB(testDBFile)
 	defer db.Close()
 
 	handler := SearchHandler(db)
 
-	// Create a request with invalid JSON
-	invalidJSON := []byte(`{"query": "test"`) // Missing closing brace
+	invalidJSON := []byte(`{"query": "test"`)
 
 	req, _ := http.NewRequest("POST", "/api/search-query", bytes.NewReader(invalidJSON))
 	req.Header.Set("Content-Type", "application/json")
 
 	rr := httptest.NewRecorder()
 
-	// --- ACT ---
 	handler.ServeHTTP(rr, req)
 
-	// --- ASSERT ---
-	// We expect a 400 Bad Request status code.
 	if status := rr.Code; status != http.StatusBadRequest {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
 	}

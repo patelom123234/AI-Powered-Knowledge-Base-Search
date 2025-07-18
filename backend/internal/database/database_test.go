@@ -1,5 +1,3 @@
-// In: backend/internal/database/database_test.go
-
 package database
 
 import (
@@ -11,18 +9,15 @@ import (
 
 // TestInitDB tests the database initialization function
 func TestInitDB(t *testing.T) {
-	// Use a temporary file for testing
 	tempFile := "test_db.sqlite"
-	defer os.Remove(tempFile) // Clean up after test
+	defer os.Remove(tempFile)
 
-	// Test successful database initialization
 	db := InitDB(tempFile)
 	if db == nil {
 		t.Fatal("InitDB returned nil database")
 	}
 	defer db.Close()
 
-	// Test that we can ping the database
 	if err := db.Ping(); err != nil {
 		t.Fatalf("Failed to ping database: %v", err)
 	}
@@ -37,7 +32,6 @@ func TestInitDB(t *testing.T) {
 		t.Fatalf("Expected table name 'search_history', got '%s'", tableName)
 	}
 
-	// Test table structure
 	rows, err := db.Query("PRAGMA table_info(search_history)")
 	if err != nil {
 		t.Fatalf("Failed to get table info: %v", err)
@@ -78,22 +72,17 @@ func TestInitDB(t *testing.T) {
 
 // TestInitDBWithInvalidPath tests database initialization with invalid path
 func TestInitDBWithInvalidPath(t *testing.T) {
-	// This test should fail due to log.Fatalf in InitDB
-	// We can't easily test this without modifying the original function
-	// So we'll skip this test for now
 	t.Skip("Skipping test that requires log.Fatalf to panic")
 }
 
 // TestSaveSearch tests the SaveSearch function
 func TestSaveSearch(t *testing.T) {
-	// Setup test database
 	tempFile := "test_save_search.sqlite"
 	defer os.Remove(tempFile)
 
 	db := InitDB(tempFile)
 	defer db.Close()
 
-	// Test data
 	testSearch := SearchHistory{
 		UserQuery:          "test query",
 		AISummaryAnswer:    "test answer",
@@ -101,7 +90,6 @@ func TestSaveSearch(t *testing.T) {
 		CreatedAt:          time.Now(),
 	}
 
-	// Test successful save
 	id, err := SaveSearch(db, testSearch)
 	if err != nil {
 		t.Fatalf("SaveSearch failed: %v", err)
@@ -110,7 +98,6 @@ func TestSaveSearch(t *testing.T) {
 		t.Errorf("Expected positive ID, got %d", id)
 	}
 
-	// Verify the data was saved correctly
 	var savedSearch SearchHistory
 	err = db.QueryRow("SELECT id, user_query, ai_summary_answer, ai_relevant_articles, created_at FROM search_history WHERE id = ?", id).
 		Scan(&savedSearch.ID, &savedSearch.UserQuery, &savedSearch.AISummaryAnswer, &savedSearch.AIRelevantArticles, &savedSearch.CreatedAt)
@@ -118,7 +105,6 @@ func TestSaveSearch(t *testing.T) {
 		t.Fatalf("Failed to query saved search: %v", err)
 	}
 
-	// Verify the saved data matches the input
 	if savedSearch.UserQuery != testSearch.UserQuery {
 		t.Errorf("UserQuery mismatch: expected '%s', got '%s'", testSearch.UserQuery, savedSearch.UserQuery)
 	}
@@ -135,14 +121,12 @@ func TestSaveSearch(t *testing.T) {
 
 // TestSaveSearchWithEmptyData tests saving with empty fields
 func TestSaveSearchWithEmptyData(t *testing.T) {
-	// Setup test database
 	tempFile := "test_empty_data.sqlite"
 	defer os.Remove(tempFile)
 
 	db := InitDB(tempFile)
 	defer db.Close()
 
-	// Test with empty data
 	emptySearch := SearchHistory{
 		UserQuery:          "",
 		AISummaryAnswer:    "",
@@ -158,7 +142,6 @@ func TestSaveSearchWithEmptyData(t *testing.T) {
 		t.Errorf("Expected positive ID, got %d", id)
 	}
 
-	// Verify empty data was saved
 	var savedSearch SearchHistory
 	err = db.QueryRow("SELECT user_query, ai_summary_answer, ai_relevant_articles FROM search_history WHERE id = ?", id).
 		Scan(&savedSearch.UserQuery, &savedSearch.AISummaryAnswer, &savedSearch.AIRelevantArticles)
@@ -179,14 +162,12 @@ func TestSaveSearchWithEmptyData(t *testing.T) {
 
 // TestSaveSearchWithSpecialCharacters tests saving data with special characters
 func TestSaveSearchWithSpecialCharacters(t *testing.T) {
-	// Setup test database
 	tempFile := "test_special_chars.sqlite"
 	defer os.Remove(tempFile)
 
 	db := InitDB(tempFile)
 	defer db.Close()
 
-	// Test with special characters that could cause SQL injection
 	specialSearch := SearchHistory{
 		UserQuery:          "'; DROP TABLE search_history; --",
 		AISummaryAnswer:    "Answer with 'quotes' and \"double quotes\"",
@@ -220,14 +201,12 @@ func TestSaveSearchWithSpecialCharacters(t *testing.T) {
 
 // TestSaveSearchMultipleRecords tests saving multiple records
 func TestSaveSearchMultipleRecords(t *testing.T) {
-	// Setup test database
 	tempFile := "test_multiple_records.sqlite"
 	defer os.Remove(tempFile)
 
 	db := InitDB(tempFile)
 	defer db.Close()
 
-	// Save multiple records
 	searches := []SearchHistory{
 		{
 			UserQuery:          "first query",
@@ -258,7 +237,6 @@ func TestSaveSearchMultipleRecords(t *testing.T) {
 		ids = append(ids, id)
 	}
 
-	// Verify all records were saved
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM search_history").Scan(&count)
 	if err != nil {
@@ -268,7 +246,6 @@ func TestSaveSearchMultipleRecords(t *testing.T) {
 		t.Errorf("Expected %d records, got %d", len(searches), count)
 	}
 
-	// Verify each record
 	for i, id := range ids {
 		var savedSearch SearchHistory
 		err := db.QueryRow("SELECT user_query, ai_summary_answer, ai_relevant_articles FROM search_history WHERE id = ?", id).
@@ -285,14 +262,12 @@ func TestSaveSearchMultipleRecords(t *testing.T) {
 
 // TestSaveSearchWithClosedDB tests saving to a closed database
 func TestSaveSearchWithClosedDB(t *testing.T) {
-	// Setup test database
 	tempFile := "test_closed_db.sqlite"
 	defer os.Remove(tempFile)
 
 	db := InitDB(tempFile)
-	db.Close() // Close the database
+	db.Close()
 
-	// Try to save to closed database
 	testSearch := SearchHistory{
 		UserQuery:          "test query",
 		AISummaryAnswer:    "test answer",
@@ -308,7 +283,6 @@ func TestSaveSearchWithClosedDB(t *testing.T) {
 
 // BenchmarkSaveSearch benchmarks the SaveSearch function
 func BenchmarkSaveSearch(b *testing.B) {
-	// Setup test database
 	tempFile := "benchmark_test.sqlite"
 	defer os.Remove(tempFile)
 

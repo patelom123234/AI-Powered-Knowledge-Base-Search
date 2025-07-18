@@ -1,9 +1,6 @@
-// In: backend/internal/kb/kb.go
-
 package kb
 
 // Article defines the structure for a knowledge base article.
-// We include JSON tags for potential future use, which is good practice.
 type Article struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`

@@ -1,5 +1,3 @@
-// In: backend/internal/kb/kb_test.go
-
 package kb
 
 import (
@@ -7,7 +5,7 @@ import (
 	"testing"
 )
 
-// TestArticleStruct tests the Article struct definition and JSON marshaling
+// TestArticleStruct tests the Article struct definition and JSON marshaling.
 func TestArticleStruct(t *testing.T) {
 	article := Article{
 		ID:      "test-001",
@@ -15,7 +13,6 @@ func TestArticleStruct(t *testing.T) {
 		Content: "This is a test article content.",
 	}
 
-	// Test struct fields
 	if article.ID != "test-001" {
 		t.Errorf("Expected ID 'test-001', got '%s'", article.ID)
 	}
@@ -28,7 +25,6 @@ func TestArticleStruct(t *testing.T) {
 		t.Errorf("Expected Content 'This is a test article content.', got '%s'", article.Content)
 	}
 
-	// Test JSON marshaling
 	jsonData, err := json.Marshal(article)
 	if err != nil {
 		t.Errorf("Failed to marshal article to JSON: %v", err)
@@ -39,7 +35,6 @@ func TestArticleStruct(t *testing.T) {
 		t.Errorf("Expected JSON '%s', got '%s'", expectedJSON, string(jsonData))
 	}
 
-	// Test JSON unmarshaling
 	var unmarshaledArticle Article
 	err = json.Unmarshal(jsonData, &unmarshaledArticle)
 	if err != nil {
@@ -59,22 +54,19 @@ func TestArticleStruct(t *testing.T) {
 	}
 }
 
-// TestGetArticles tests the GetArticles function
+// TestGetArticles tests the GetArticles function.
 func TestGetArticles(t *testing.T) {
 	articles := GetArticles()
 
-	// Test that we get a non-nil slice
 	if articles == nil {
 		t.Fatal("GetArticles() returned nil slice")
 	}
 
-	// Test that we get the expected number of articles
 	expectedCount := 3
 	if len(articles) != expectedCount {
 		t.Errorf("Expected %d articles, got %d", expectedCount, len(articles))
 	}
 
-	// Test specific articles
 	expectedArticles := []struct {
 		ID      string
 		Title   string
@@ -118,7 +110,7 @@ func TestGetArticles(t *testing.T) {
 	}
 }
 
-// TestGetArticlesConsistency tests that GetArticles returns consistent results
+// TestGetArticlesConsistency tests that GetArticles returns consistent results.
 func TestGetArticlesConsistency(t *testing.T) {
 	articles1 := GetArticles()
 	articles2 := GetArticles()
@@ -140,7 +132,7 @@ func TestGetArticlesConsistency(t *testing.T) {
 	}
 }
 
-// TestGetArticlesJSONMarshaling tests that all articles can be marshaled to JSON
+// TestGetArticlesJSONMarshaling tests that all articles can be marshaled to JSON.
 func TestGetArticlesJSONMarshaling(t *testing.T) {
 	articles := GetArticles()
 
@@ -151,7 +143,6 @@ func TestGetArticlesJSONMarshaling(t *testing.T) {
 			continue
 		}
 
-		// Verify the JSON contains expected fields
 		var unmarshaled map[string]interface{}
 		err = json.Unmarshal(jsonData, &unmarshaled)
 		if err != nil {
@@ -159,7 +150,6 @@ func TestGetArticlesJSONMarshaling(t *testing.T) {
 			continue
 		}
 
-		// Check that all expected fields are present
 		expectedFields := []string{"id", "title", "content"}
 		for _, field := range expectedFields {
 			if _, exists := unmarshaled[field]; !exists {
@@ -167,7 +157,6 @@ func TestGetArticlesJSONMarshaling(t *testing.T) {
 			}
 		}
 
-		// Check that the values match
 		if unmarshaled["id"] != article.ID {
 			t.Errorf("Article %d JSON ID mismatch: expected '%s', got '%v'", i, article.ID, unmarshaled["id"])
 		}
@@ -180,16 +169,14 @@ func TestGetArticlesJSONMarshaling(t *testing.T) {
 	}
 }
 
-// TestGetArticlesSliceProperties tests slice properties
+// TestGetArticlesSliceProperties tests slice properties.
 func TestGetArticlesSliceProperties(t *testing.T) {
 	articles := GetArticles()
 
-	// Test that the slice is not empty
 	if len(articles) == 0 {
 		t.Error("GetArticles() returned empty slice")
 	}
 
-	// Test that we can iterate over the slice
 	count := 0
 	for range articles {
 		count++
@@ -198,7 +185,6 @@ func TestGetArticlesSliceProperties(t *testing.T) {
 		t.Errorf("Iteration count mismatch: expected %d, got %d", len(articles), count)
 	}
 
-	// Test that we can access elements by index
 	for i := range articles {
 		if articles[i].ID == "" {
 			t.Errorf("Article %d has empty ID", i)
@@ -212,7 +198,7 @@ func TestGetArticlesSliceProperties(t *testing.T) {
 	}
 }
 
-// BenchmarkGetArticles benchmarks the GetArticles function
+// BenchmarkGetArticles benchmarks the GetArticles function.
 func BenchmarkGetArticles(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		GetArticles()
