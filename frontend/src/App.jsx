@@ -3,6 +3,7 @@ import { postSearchQuery } from './services/api';
 import SearchBar from './components/SearchBar';
 import ResultsDisplay from './components/ResultsDisplay';
 import RelevantArticles from './components/RelevantArticles';
+import './App.css';
 
 function App() {
   const [searchResult, setSearchResult] = useState(null);
@@ -25,24 +26,48 @@ function App() {
     }
   };
 
-
   return (
-    <div style={{ maxWidth: '800px', margin: 'auto' }}>
-      <h1>AI-Powered Knowledge Base Search</h1>
-      <SearchBar onSearch={handleSearch} isLoading={isLoading} /> 
-      
-      <hr style={{ margin: '2rem 0' }} />
+    <div className="app">
+      <div className="app-container">
+        <header className="app-header">
+          <div className="logo">
+            <div className="logo-icon">🤖</div>
+            <h1>AI Knowledge Base</h1>
+          </div>
+          <p className="app-subtitle">
+            Get instant answers to your IT questions using our intelligent knowledge base
+          </p>
+        </header>
 
-      {isLoading && <p>Searching for answers...</p>}
+        <main className="app-main">
+          <SearchBar onSearch={handleSearch} isLoading={isLoading} /> 
+          
+          {isLoading && (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p className="loading-text">Searching for answers...</p>
+            </div>
+          )}
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+          {error && (
+            <div className="error-container">
+              <div className="error-icon">⚠️</div>
+              <p className="error-text">{error}</p>
+            </div>
+          )}
 
-      {searchResult && (
-        <>
-          <ResultsDisplay result={searchResult} />
-          <RelevantArticles articles={searchResult.ai_relevant_articles} />
-        </>
-      )}
+          {searchResult && (
+            <div className="results-container">
+              <ResultsDisplay result={searchResult} />
+              <RelevantArticles articles={searchResult.ai_relevant_articles} />
+            </div>
+          )}
+        </main>
+
+        <footer className="app-footer">
+          <p>Powered by AI • Built with React & Go</p>
+        </footer>
+      </div>
     </div>
   );
 }

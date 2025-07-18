@@ -1,44 +1,49 @@
-Interaction 1: Initial Backend Server Setup
-Context: I needed to create the initial Golang backend server. I wanted a simple, idiomatic server using the standard net/http library, including a basic health check endpoint.
-My Prompt: Create a basic Golang web server using the net/http package. It should listen on port 8080 and have a /api/health endpoint that returns a JSON object {"status": "ok"}.
-AI Suggestion: The assistant generated a complete main.go file. It included the main function, the http.HandleFunc for the health check, proper JSON content-type headers, and the http.ListenAndServe call with error handling.
-My Action: Accepted. The generated code was exactly what I needed. It was clean, followed Go conventions, and provided a perfect starting point for the project.
-Interaction 2: Database Module with SQLite
-Context: I needed to create the persistence layer for the application using SQLite. I wanted a module that would initialize the database and provide a function to save search history records securely.
-My Prompt: Write a Go module for an SQLite database. It needs an InitDB function that takes a file path and creates a "search_history" table if it doesn't exist. Also, create a SaveSearch function that takes a SearchHistory struct and saves it to the database using prepared statements to prevent SQL injection.
-AI Suggestion: The AI provided the full code for internal/database/database.go. It included the SearchHistory struct, the InitDB function with the correct CREATE TABLE IF NOT EXISTS SQL statement, and a SaveSearch function that correctly used db.Prepare() and stmt.Exec() for security.
-My Action: Accepted. The code was excellent. Using prepared statements is a critical security practice, and the AI implemented it correctly without me having to specify every detail. This saved significant time.
-Interaction 3: Debugging a Go Module Error
-Context: After creating the database module, I tried to run go get github.com/mattn/go-sqlite3 and encountered an error. I wasn't sure what was wrong.
-My Prompt: (I pasted the full error message into the AI chat)
-Generated code
-go: go.mod file not found in current directory or any parent directory.
-'go get' is no longer supported outside a module.
-To build and install a command, use 'go install' with a version...
-Use code with caution.
-AI Suggestion: The AI immediately diagnosed the problem. It explained that modern Go projects require a go.mod file to manage dependencies and that I needed to initialize a Go module first. It provided the exact command to fix it: go mod init <module-name>.
-My Action: Accepted. I ran go mod init ai-knowledge-base as suggested, which created the go.mod file. Afterwards, the go get command worked perfectly. The AI's explanation was clear and its solution was precise.
-Interaction 4: Frontend Test Script Configuration
-Context: I had written my first frontend test with Vitest but running npm test failed with an error.
-My Prompt: (Pasted the error message)
-Generated code
-npm ERR! Missing script: "test"
-Use code with caution.
-AI Suggestion: The assistant explained that the default Vite package.json does not include a "test" script. It told me to open package.json, find the "scripts" section, and add a new entry: "test": "vitest".
-My Action: Accepted. I edited the package.json file exactly as suggested. This resolved the error and allowed my frontend test suite to run.
-Interaction 5: Refactoring for Testability (Dependency Injection)
-Context: My initial ai_client.go file created the Gemini client directly inside the GetAIAnswer function. I knew this would be hard to test, so I wanted to refactor it using professional design patterns.
-My Prompt: I have this Go function that calls the Gemini API directly. I want to make it testable without making real network calls. Can you refactor it using an interface and dependency injection so I can mock the AI model during tests?
-(I then pasted the initial, non-testable version of the ai_client.go code).
-AI Suggestion: The AI provided a complete and masterful refactoring. It introduced a GenerativeAIModel interface, split the logic into a public-facing function (GetAIAnswer) and a testable internal function (getAIAnswerInternal), and used a "factory" pattern to inject the dependency. This new structure completely decoupled my application logic from the external API client.
-My Action: Accepted and Studied. This was the most valuable interaction. The suggested pattern was exactly the best-practice solution for this problem. It elevated the quality of the project significantly.
-Interaction 6: Writing the Corresponding Mock and Test
-Context: After the refactoring, I needed to write the actual test code that used the new, testable structure.
-My Prompt: Now, using the refactored ai_client.go code you just gave me, show me how to write the test file for it. Create a mockAIModel that satisfies the interface and write a test for the success case of the getAIAnswerInternal function.
-AI Suggestion: The assistant generated the complete ai_client_test.go file. It included the mockAIModel struct with the interface methods implemented, and a full test function (TestGetAIAnswerInternal_Success) that configured the mock, injected it via the mock factory, and asserted the results.
-My Action: Accepted. The test code was perfect. It demonstrated exactly how the dependency injection pattern pays off, allowing for a fast, reliable, and isolated unit test.
-Interaction 7: Crafting the Final Gemini Prompt
-Context: I needed to create the final, robust prompt to send to the Gemini API. I wanted to ensure the output was consistently a valid JSON object.
-My Prompt: Create a detailed prompt for the Gemini 1.5 Flash model. It should act as an IT support assistant. Tell it to answer a user's question based only on a provided list of knowledge base articles. Crucially, instruct it that its entire response must be a single, valid JSON object with the keys "ai_summary_answer" and "ai_relevant_articles", with no other text like "Here is the JSON you requested."
-AI Suggestion: The AI produced an excellent, multi-part prompt template. It included a role description ("You are an expert IT support assistant..."), a clear constraint ("based ONLY on the provided..."), placeholders for the articles and user query, and very explicit instructions about the JSON output format.
-My Action: Accepted and Integrated. I used the suggested template as the basis for my buildPrompt function. The explicit instruction about the output format was key to making the response parsing reliable.
+Interaction 1: Scaffolding the Initial Project Structure
+Context: Before writing code, I wanted a well-organized directory structure that separates concerns, anticipating future complexity.
+My Prompt (Engineer's Prompt): Design a Go API project structure following Clean Architecture principles. Show me a directory tree and briefly explain the roles of/cmd,/internal/api(for handlers),/internal/domain, and/internal/service.
+AI Suggestion: The AI provided a good starting structure, including /pkg which is often debated. It put database logic directly in a top-level /internal/repository directory.
+My Action: Modified. The structure was overly complex for this assignment. I simplified it by merging the repository/service layers for this specific use case and completely removed the /pkg directory, as all my code would be private to this single module. The AI's suggestion was a good textbook example, but I adapted it to fit the project's actual scope.
+
+Interaction 2: Creating the HTTP Handler with Middleware
+Context: I needed the main HTTP handler for /api/search-query, but I also knew I'd need CORS middleware immediately for the frontend.
+My Prompt (Engineer's Prompt): Generate a Go HTTP handler function for a POST endpoint. It should be wrapped in a separate CORS middleware function that sets "Access-Control-Allow-Origin" to "*". The handler itself should just decode a simple JSON request body for now.
+AI Suggestion: The AI generated a working handler and a separate middleware function. However, the middleware was verbose and didn't handle the pre-flight OPTIONS request, which is a common oversight.
+My Action: Modified. I accepted the basic structure but manually added logic to the middleware to specifically handle r.Method == "OPTIONS" by writing a 200 OK header and returning early. This prevents bugs with browser pre-flight checks.
+
+Interaction 3: Testable AI Client Refactoring
+Context: My first draft of the AI client made a direct API call, which I knew was untestable. I needed to refactor it using Dependency Injection.
+My Prompt (Engineer's Prompt): Refactor this Go function to be testable. It directly creates a Gemini client. I want to use dependency injection. Define a small interface that contains only the methods my function needs from the client. Then, modify the function to accept that interface as an argument.
+(I pasted the initial, untestable code)
+AI Suggestion: The AI correctly created an interface and modified the function to accept it. However, it named the interface GeminiClientInterface, which is a common anti-pattern in Go (interfaces shouldn't be named after their implementation).
+My Action: Refactored and Renamed. I accepted the core refactoring but renamed the interface to GenerativeModel to describe what it does, not what it is, which is idiomatic Go. A small but important change for code quality.
+
+Interaction 4: Debugging a Subtle defer Bug
+Context: I had created a realModelFactory function to produce my AI client, but my API calls were failing with a "connection closed" error. I suspected a lifecycle issue.
+My Prompt (Engineer's Prompt): In this Go function, I create a new Gemini client and return the model from it. But my calls are failing. I suspect thedefer client.Close()is executing too early. Is that correct? Explain why and provide the corrected code.
+(I pasted the factory function with the incorrect defer)
+AI Suggestion: The AI correctly identified the bug. It explained that defer schedules the call to run when the current function returns, not when the program exits. This meant the client was being closed immediately after being created. It provided the corrected code with the defer line removed.
+My Action: Accepted. The AI's diagnosis and explanation were perfect. This confirmed my suspicion and provided the fix, saving me debugging time.
+
+Interaction 5: Writing a Robust JSON Extraction Function
+Context: The AI API was inconsistently wrapping its JSON response in markdown fences. My initial strings.Index approach was too brittle.
+My Prompt (Engineer's Prompt): Write a Go function that takes a raw string from an LLM and extracts a JSON object. The function must be robust enough to handle cases where the JSON is wrapped in \``json ... ```, cases where there's conversational text before the first '{', and cases where there is no JSON at all.]`
+AI Suggestion: The AI provided a function that used strings.TrimPrefix for the markdown fence and then strings.Index for the first brace. This was better but still not perfect.
+My Action: Modified. I found the AI's suggestion could still fail in some edge cases. I rejected the initial implementation and asked for a follow-up: That's a good start, but what if there's text after the final curly brace? Modify it to find the first '{' and the *last* '}' to create the slice. The AI then provided the improved version, which I accepted.
+
+Interaction 6: Optimizing Frontend State
+Context: My React component had multiple useState calls for isLoading, error, and data. This is fine, but can become messy. I wanted to consolidate them.
+My Prompt (Engineer's Prompt): Refactor these three useState hooks in React into a single useReducer hook. Define the reducer function to handle actions for 'FETCH_START', 'FETCH_SUCCESS', and 'FETCH_ERROR'.
+AI Suggestion: The AI correctly generated the useReducer implementation, including the initial state object, the reducer function with a switch statement, and how to dispatch the actions inside my handleSearch function.
+My Action: Accepted. This was a great suggestion for improving code quality. Using useReducer makes state transitions more explicit and predictable, which is a pattern favored by experienced React developers.
+
+Interaction 7: Rejecting a Poor Test Suggestion
+Context: I asked the AI to write a test for my database module.
+My Prompt (Engineer's Prompt): Write a Go unit test for my SaveSearch function. It should verify that a record is inserted into an in-memory SQLite database.
+AI Suggestion: The AI generated a test that wrote a record and then read it back to check one field. However, it didn't clean up the test database file afterwards, meaning test runs would interfere with each other. It also didn't assert all fields of the struct.
+My Action: Rejected and Rewrote. I rejected the initial suggestion because it was not a "clean" test. I rewrote it myself, adding a TestMain function with setup() and teardown() to create and delete the database file for each run. I also added assertions for every field in the returned struct to make the test more thorough.
+
+Interaction 8: Generating a GitHub Actions CI Workflow
+Context: I wanted to add a basic CI pipeline to automatically run tests on every push.
+My Prompt (Engineer's Prompt): Generate a GitHub Actions workflow file. It should trigger on push to the 'main' branch. It needs two parallel jobs: one for the backend that runs 'go test', and one for the frontend that runs 'npm install' and 'npm test'. Also, show how to use matrix testing to run the backend job against two Go versions: 1.21 and 1.22.
+AI Suggestion: The AI provided a nearly perfect YAML file. It set up the parallel jobs, the checkout steps, and the commands. It correctly implemented the strategy.matrix for the Go versions.
+My Action: Accepted. This was a huge time-saver. Writing CI YAML files from scratch is tedious and error-prone. The AI's output was immediately usable.
