@@ -2,6 +2,9 @@
 
 This project is a full-stack "Event-to-Insight" application built for the Al-Native Developer Assignment. It's a self-service tool that allows users to query an IT knowledge base and receive a summarized, AI-generated answer.
 
+<img width="1434" height="743" alt="image" src="https://github.com/user-attachments/assets/bf722d69-4318-4632-aea9-0c60db7c20ef" />
+
+
 ## Core Functionality & User Journey
 
 The application provides a simple and intuitive interface for IT support self-service.
